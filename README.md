@@ -1,4 +1,4 @@
-# Handy Bookshelves
+# Handy Bookshelf
 
 A Fabric mod for Minecraft 1.21.11 that makes enchanted books visually stand out in chiseled bookshelves.
 
@@ -29,7 +29,7 @@ Without these, all features work with sensible defaults. You can also edit `conf
 
 1. Install Fabric Loader for Minecraft 1.21.11
 2. Download Fabric API and place it in your `mods/` folder
-3. Download Handy Bookshelves and place it in your `mods/` folder
+3. Download Handy Bookshelf and place it in your `mods/` folder
 4. Launch the game!
 
 ### Server
@@ -38,18 +38,18 @@ The mod is required on **both the server and all connecting clients** (a mixin s
 
 **Server setup:**
 1. Install Fabric Loader on your server
-2. Place Fabric API and Handy Bookshelves in the server's `mods/` folder
+2. Place Fabric API and Handy Bookshelf in the server's `mods/` folder
 3. Start the server
 
 **Client setup:**
-1. Each player needs Fabric Loader, Fabric API, and Handy Bookshelves installed
+1. Each player needs Fabric Loader, Fabric API, and Handy Bookshelf installed
 2. Players without the mod will not see enchantment glint or name tags on bookshelves
 
 ## Building from Source
 
 ```bash
-git clone https://github.com/dfox288/HandyBookshelves.git
-cd HandyBookshelves
+git clone https://github.com/dfox288/HandyBookshelf.git
+cd HandyBookshelf
 
 ./gradlew build
 # The compiled JAR will be in build/libs/

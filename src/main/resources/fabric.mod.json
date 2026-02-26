@@ -2,15 +2,15 @@
 	"schemaVersion": 1,
 	"id": "handybookshelves",
 	"version": "${version}",
-	"name": "Handy Bookshelves",
+	"name": "Handy Bookshelf",
 	"description": "Enchanted books in chiseled bookshelves glow with an enchantment shimmer, so you can tell at a glance which slots hold enchanted books.",
 	"authors": [
 		"D.Fox"
 	],
 	"contact": {
-		"homepage": "https://github.com/dfox288/HandyBookshelves",
-		"sources": "https://github.com/dfox288/HandyBookshelves",
-		"issues": "https://github.com/dfox288/HandyBookshelves/issues"
+		"homepage": "https://github.com/dfox288/HandyBookshelf",
+		"sources": "https://github.com/dfox288/HandyBookshelf",
+		"issues": "https://github.com/dfox288/HandyBookshelf/issues"
 	},
 	"license": "MIT",
 	"icon": "assets/handybookshelves/icon.png",
