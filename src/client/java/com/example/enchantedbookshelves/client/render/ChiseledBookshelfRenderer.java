@@ -4,6 +4,8 @@ import com.example.enchantedbookshelves.config.HandyBookshelvesConfig;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
@@ -12,6 +14,8 @@ import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
@@ -23,8 +27,8 @@ import net.minecraft.world.phys.Vec3;
 
 public class ChiseledBookshelfRenderer implements BlockEntityRenderer<ChiseledBookShelfBlockEntity, ChiseledBookshelfRenderState> {
 
-	private static final Identifier OCCUPIED_TEXTURE =
-			Identifier.withDefaultNamespace("textures/block/chiseled_bookshelf_occupied.png");
+	private static final Identifier OCCUPIED_SPRITE_ID =
+			Identifier.withDefaultNamespace("block/chiseled_bookshelf_occupied");
 
 	// Slot geometry in block-local coordinates (north-facing, 0-1 scale).
 	// Each entry: { fromX, fromY, toX, toY } derived from vanilla model JSONs.
@@ -79,13 +83,28 @@ public class ChiseledBookshelfRenderer implements BlockEntityRenderer<ChiseledBo
 					&& stack.is(Items.ENCHANTED_BOOK)
 					&& glintEnabled;
 		}
+
+		// Look up the sprite on the block texture atlas and transform raw UVs
+		TextureAtlasSprite sprite = Minecraft.getInstance()
+				.getAtlasManager()
+				.getAtlasOrThrow(TextureAtlas.LOCATION_BLOCKS)
+				.getSprite(OCCUPIED_SPRITE_ID);
+
+		for (int slot = 0; slot < 6; slot++) {
+			float[] raw = SLOT_UVS[slot];
+			// raw values are in 0-1 space; multiply by 16 for pixel coordinates
+			state.atlasUVs[slot][0] = sprite.getU(raw[0] * 16f);
+			state.atlasUVs[slot][1] = sprite.getV(raw[1] * 16f);
+			state.atlasUVs[slot][2] = sprite.getU(raw[2] * 16f);
+			state.atlasUVs[slot][3] = sprite.getV(raw[3] * 16f);
+		}
 	}
 
 	@Override
 	public void submit(ChiseledBookshelfRenderState state, PoseStack poseStack,
 					   SubmitNodeCollector collector, CameraRenderState cameraState) {
 
-		RenderType textureLayer = RenderTypes.entityCutout(OCCUPIED_TEXTURE);
+		RenderType textureLayer = Sheets.cutoutBlockSheet();
 		RenderType glintLayer = RenderTypes.entityGlint();
 
 		for (int slot = 0; slot < 6; slot++) {
@@ -96,15 +115,16 @@ public class ChiseledBookshelfRenderer implements BlockEntityRenderer<ChiseledBo
 			// Rotate to match block facing - vanilla models are authored north-facing
 			applyFacingRotation(poseStack, state.facing);
 
-			// Render the book face quad
+			// Render the book face quad using atlas-transformed UVs
 			final int capturedSlot = slot;
+			final float[] slotAtlasUVs = state.atlasUVs[slot];
 			collector.submitCustomGeometry(poseStack, textureLayer,
-					(pose, vertexConsumer) -> renderSlotQuad(pose, vertexConsumer, capturedSlot, state.lightCoords));
+					(pose, vertexConsumer) -> renderSlotQuad(pose, vertexConsumer, capturedSlot, state.lightCoords, slotAtlasUVs));
 
 			// Render glint overlay if enchanted
 			if (state.slotGlint[slot]) {
 				collector.submitCustomGeometry(poseStack, glintLayer,
-						(pose, vertexConsumer) -> renderSlotQuad(pose, vertexConsumer, capturedSlot, state.lightCoords));
+						(pose, vertexConsumer) -> renderSlotQuad(pose, vertexConsumer, capturedSlot, state.lightCoords, slotAtlasUVs));
 			}
 
 			poseStack.popPose();
@@ -126,13 +146,12 @@ public class ChiseledBookshelfRenderer implements BlockEntityRenderer<ChiseledBo
 	}
 
 	private static void renderSlotQuad(PoseStack.Pose pose, VertexConsumer consumer,
-										int slot, int packedLight) {
+										int slot, int packedLight, float[] atlasUVs) {
 
 		float[] bounds = SLOT_BOUNDS[slot];
-		float[] uvs = SLOT_UVS[slot];
 
 		float x0 = bounds[0], y0 = bounds[1], x1 = bounds[2], y1 = bounds[3];
-		float u0 = uvs[0], v0 = uvs[1], u1 = uvs[2], v1 = uvs[3];
+		float u0 = atlasUVs[0], v0 = atlasUVs[1], u1 = atlasUVs[2], v1 = atlasUVs[3];
 		float z = FACE_Z;
 
 		// Normal pointing north (toward camera when facing north)
