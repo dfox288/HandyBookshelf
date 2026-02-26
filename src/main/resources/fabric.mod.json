@@ -1,0 +1,40 @@
+{
+	"schemaVersion": 1,
+	"id": "handybookshelves",
+	"version": "${version}",
+	"name": "Handy Bookshelves",
+	"description": "Enchanted books in chiseled bookshelves glow with an enchantment shimmer, so you can tell at a glance which slots hold enchanted books.",
+	"authors": [
+		"D.Fox"
+	],
+	"contact": {
+		"homepage": "https://github.com/dfox288/HandyBookshelves",
+		"sources": "https://github.com/dfox288/HandyBookshelves",
+		"issues": "https://github.com/dfox288/HandyBookshelves/issues"
+	},
+	"license": "MIT",
+	"icon": "assets/handybookshelves/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"com.example.enchantedbookshelves.HandyBookshelves"
+		],
+		"client": [
+			"com.example.enchantedbookshelves.client.HandyBookshelvesClient"
+		],
+		"modmenu": [
+			"com.example.enchantedbookshelves.client.config.ModMenuIntegration"
+		]
+	},
+	"mixins": [],
+	"depends": {
+		"fabricloader": ">=0.18.1",
+		"minecraft": "~1.21.11",
+		"java": ">=21",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"yet_another_config_lib_v3": ">=3.8.0",
+		"modmenu": ">=17.0.0"
+	}
+}

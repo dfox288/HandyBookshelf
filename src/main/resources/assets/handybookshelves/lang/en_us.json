@@ -1,0 +1,7 @@
+{
+	"config.handybookshelves.title": "Handy Bookshelves Settings",
+
+	"config.handybookshelves.category.rendering": "Rendering",
+	"config.handybookshelves.enableGlint": "Enchantment Glint",
+	"config.handybookshelves.enableGlint.desc": "Show an enchantment shimmer on chiseled bookshelf slots that contain enchanted books."
+}
