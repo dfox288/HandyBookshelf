@@ -14,8 +14,8 @@ import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
@@ -87,7 +87,7 @@ public class ChiseledBookshelfRenderer implements BlockEntityRenderer<ChiseledBo
 		// Look up the sprite on the block texture atlas and transform raw UVs
 		TextureAtlasSprite sprite = Minecraft.getInstance()
 				.getAtlasManager()
-				.getAtlasOrThrow(TextureAtlas.LOCATION_BLOCKS)
+				.getAtlasOrThrow(AtlasIds.BLOCKS)
 				.getSprite(OCCUPIED_SPRITE_ID);
 
 		for (int slot = 0; slot < 6; slot++) {
