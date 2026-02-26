@@ -39,8 +39,9 @@ public class ChiseledBookshelfRenderer implements BlockEntityRenderer<ChiseledBo
 			{ 0f/16f, 0f/16f,  5f/16f,  8f/16f},  // slot 5: bottom-right
 	};
 
-	// Z offset: slightly in front of the north face (Z=0) so the glint renders on top
-	private static final float GLINT_Z = -0.001f;
+	// Z offset: slightly south of the north face (Z=0), i.e. toward the camera,
+	// so the glint quad renders in front of the vanilla baked model face.
+	private static final float GLINT_Z = 0.001f;
 
 	public ChiseledBookshelfRenderer(BlockEntityRendererProvider.Context ctx) {
 	}
