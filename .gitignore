@@ -32,6 +32,9 @@ Thumbs.db
 *.jar
 !gradle/wrapper/gradle-wrapper.jar
 
+# extracted MC source
+net/
+
 # claude
 .claude/
 CLAUDE.md
