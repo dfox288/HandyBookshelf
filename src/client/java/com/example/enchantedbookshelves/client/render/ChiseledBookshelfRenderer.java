@@ -117,7 +117,18 @@ public class ChiseledBookshelfRenderer implements BlockEntityRenderer<ChiseledBo
 			boolean isEnchantedBook = !stack.isEmpty() && stack.is(Items.ENCHANTED_BOOK);
 
 			state.slotGlint[slot] = isEnchantedBook && config.enableGlint;
-			state.slotName[slot] = (isEnchantedBook && slot == aimedSlot) ? getEnchantmentLabel(stack) : null;
+
+			if (slot == aimedSlot && !stack.isEmpty()) {
+				if (isEnchantedBook) {
+					state.slotName[slot] = getEnchantmentLabel(stack);
+				} else if (stack.is(Items.WRITTEN_BOOK) || stack.has(DataComponents.CUSTOM_NAME)) {
+					state.slotName[slot] = stack.getHoverName();
+				} else {
+					state.slotName[slot] = null;
+				}
+			} else {
+				state.slotName[slot] = null;
+			}
 		}
 	}
 
@@ -170,11 +181,14 @@ public class ChiseledBookshelfRenderer implements BlockEntityRenderer<ChiseledBo
 
 		MutableComponent result = null;
 		for (Object2IntMap.Entry<Holder<Enchantment>> entry : stored.entrySet()) {
-			Component name = Enchantment.getFullname(entry.getKey(), entry.getIntValue());
+			// getFullname() applies ChatFormatting.GRAY styling — strip it so our
+			// white vertex color (0xFFFFFFFF) controls the appearance instead.
+			Component fullName = Enchantment.getFullname(entry.getKey(), entry.getIntValue());
+			String plain = fullName.getString();
 			if (result == null) {
-				result = name.copy();
+				result = Component.literal(plain);
 			} else {
-				result.append(", ").append(name);
+				result.append(", ").append(plain);
 			}
 		}
 		return result;
