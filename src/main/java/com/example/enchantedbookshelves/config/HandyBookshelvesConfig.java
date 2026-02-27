@@ -19,6 +19,9 @@ public class HandyBookshelvesConfig {
 
 	// -- Features --
 	public boolean enableGlint = true;
+	public boolean enableNameTags = true;
+	public int nameTagRange = 4;        // blocks (1-16)
+	public int nameTagScale = 100;      // percentage (50-200)
 
 	public static HandyBookshelvesConfig get() {
 		if (INSTANCE == null) {

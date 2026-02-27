@@ -77,8 +77,9 @@ public class ChiseledBookshelfRenderer implements BlockEntityRenderer<ChiseledBo
 	// Both the opaque and glint quads render at this same Z so their depth values match.
 	private static final float GLINT_Z = -0.001f;
 
-	// Maximum distance (squared) at which enchantment name tags are visible.
-	private static final double NAME_TAG_RANGE_SQ = 4.0 * 4.0;
+	// Default maximum distance (squared) at which enchantment name tags are visible.
+	// Actual value comes from config.
+	private static final double DEFAULT_NAME_TAG_RANGE_SQ = 4.0 * 4.0;
 
 	private final Font font;
 
@@ -102,11 +103,12 @@ public class ChiseledBookshelfRenderer implements BlockEntityRenderer<ChiseledBo
 		state.facing = blockState.getValue(ChiseledBookShelfBlock.FACING);
 		state.distanceToCameraSq = cameraPos.distanceToSqr(Vec3.atCenterOf(blockEntity.getBlockPos()));
 
-		boolean glintEnabled = HandyBookshelvesConfig.get().enableGlint;
+		HandyBookshelvesConfig config = HandyBookshelvesConfig.get();
 
 		// Determine which slot the crosshair is pointing at (if any)
 		int aimedSlot = -1;
-		if (state.distanceToCameraSq <= NAME_TAG_RANGE_SQ) {
+		double nameTagRangeSq = config.nameTagRange * (double) config.nameTagRange;
+		if (config.enableNameTags && state.distanceToCameraSq <= nameTagRangeSq) {
 			aimedSlot = getAimedSlot(blockEntity);
 		}
 
@@ -114,7 +116,7 @@ public class ChiseledBookshelfRenderer implements BlockEntityRenderer<ChiseledBo
 			ItemStack stack = blockEntity.getItem(slot);
 			boolean isEnchantedBook = !stack.isEmpty() && stack.is(Items.ENCHANTED_BOOK);
 
-			state.slotGlint[slot] = isEnchantedBook && glintEnabled;
+			state.slotGlint[slot] = isEnchantedBook && config.enableGlint;
 			state.slotName[slot] = (isEnchantedBook && slot == aimedSlot) ? getEnchantmentLabel(stack) : null;
 		}
 	}
@@ -216,7 +218,9 @@ public class ChiseledBookshelfRenderer implements BlockEntityRenderer<ChiseledBo
 		}
 
 		// Render name tag for the aimed slot when player is close
-		if (anyName && state.distanceToCameraSq <= NAME_TAG_RANGE_SQ) {
+		HandyBookshelvesConfig config = HandyBookshelvesConfig.get();
+		double nameTagRangeSq = config.nameTagRange * (double) config.nameTagRange;
+		if (anyName && state.distanceToCameraSq <= nameTagRangeSq) {
 			for (int slot = 0; slot < 6; slot++) {
 				if (state.slotName[slot] == null) continue;
 
@@ -232,8 +236,8 @@ public class ChiseledBookshelfRenderer implements BlockEntityRenderer<ChiseledBo
 				// Billboard: face camera (same as vanilla NameTagFeatureRenderer)
 				poseStack.mulPose(cameraState.orientation);
 
-				// Text scale — vanilla name tag size
-				float scale = 0.025F;
+				// Text scale — vanilla name tag size, adjusted by config percentage
+				float scale = 0.025F * (config.nameTagScale / 100.0f);
 				poseStack.scale(scale, -scale, scale);
 
 				// Center text horizontally
