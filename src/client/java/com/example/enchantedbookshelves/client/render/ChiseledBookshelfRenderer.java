@@ -13,9 +13,8 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -208,7 +207,7 @@ public class ChiseledBookshelfRenderer implements BlockEntityRenderer<ChiseledBo
 
 		// Render glint overlays
 		if (anyGlint) {
-			RenderType opaqueLayer = RenderTypes.entityCutoutNoCull(GLINT_MASK_TEXTURE);
+			RenderType opaqueLayer = RenderTypes.entityCutout(GLINT_MASK_TEXTURE);
 			RenderType glintLayer = RenderTypes.entityGlint();
 
 			for (int slot = 0; slot < 6; slot++) {
