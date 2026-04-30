@@ -199,84 +199,95 @@ public class ChiseledBookshelfRenderer implements BlockEntityRenderer<ChiseledBo
 		}
 		if (!anyGlint && !anyName) return;
 
-		// Render glint overlays
 		if (anyGlint) {
-			RenderType opaqueLayer = RenderTypes.entityCutout(GLINT_MASK_TEXTURE);
-			RenderType glintLayer = RenderTypes.entityGlint();
-
-			for (int slot = 0; slot < 6; slot++) {
-				if (!state.slotGlint[slot]) continue;
-
-				poseStack.pushPose();
-				applyFacingRotation(poseStack, state.facing);
-
-				final int capturedSlot = slot;
-
-				// Pass 1: opaque textured quad (writes depth, uses mask to limit to book area)
-				collector.submitCustomGeometry(poseStack, opaqueLayer,
-						(pose, vertexConsumer) -> renderOpaqueQuad(pose, vertexConsumer, capturedSlot));
-
-				// Pass 2: glint overlay (EQUAL_DEPTH_TEST matches pass 1)
-				collector.submitCustomGeometry(poseStack, glintLayer,
-						(pose, vertexConsumer) -> renderGlintQuad(pose, vertexConsumer, capturedSlot));
-
-				poseStack.popPose();
-			}
+			submitGlint(state, poseStack, collector);
 		}
 
-		// Render name tag for the aimed slot when player is close
-		HandyBookshelfConfig config = HandyBookshelfConfig.get();
-		double nameTagRangeSq = config.nameTagRange * (double) config.nameTagRange;
-		if (anyName && state.distanceToCameraSq <= nameTagRangeSq) {
-			for (int slot = 0; slot < 6; slot++) {
-				if (state.slotName[slot] == null) continue;
-
-				poseStack.pushPose();
-
-				// Calculate slot center in block-local world coordinates
-				SlotGeometry geom = SLOTS[slot];
-				float cx = (geom.fromX() + geom.toX()) / 2f;
-				float cy = (geom.fromY() + geom.toY()) / 2f;
-				Vec3 slotPos = getSlotWorldOffset(cx, cy, state.facing);
-				poseStack.translate(slotPos.x, slotPos.y + 0.3, slotPos.z);
-
-				// Billboard: face camera (same as vanilla NameTagFeatureRenderer)
-				poseStack.mulPose(cameraState.orientation);
-
-				// Text scale — vanilla name tag size, adjusted by config percentage
-				float scale = 0.025F * (config.nameTagScale / 100.0f);
-				poseStack.scale(scale, -scale, scale);
-
-				// Center text horizontally
-				FormattedCharSequence fcs = state.slotName[slot].getVisualOrderText();
-				float textX = -this.font.width(fcs) / 2.0f;
-				int textWidth = this.font.width(fcs);
-
-				int bgColor = (int)(Minecraft.getInstance().options.getBackgroundOpacity(0.25f) * 255.0f) << 24;
-				int light = FULL_BRIGHT_LIGHT;
-
-				// Background quad rendered separately (like text_display entities do),
-				// in order(0) so it renders before the text.
-				collector.order(1).submitCustomGeometry(poseStack,
-						RenderTypes.textBackgroundSeeThrough(),
-						(pose, vc) -> {
-							float hw = textWidth / 2.0f + 1;
-							vc.addVertex(pose, -hw, -1.0f, 0.0f).setColor(bgColor).setLight(light);
-							vc.addVertex(pose, -hw, 10.0f, 0.0f).setColor(bgColor).setLight(light);
-							vc.addVertex(pose, hw, 10.0f, 0.0f).setColor(bgColor).setLight(light);
-							vc.addVertex(pose, hw, -1.0f, 0.0f).setColor(bgColor).setLight(light);
-						});
-
-				// Text in order(2), rendered AFTER background AND glint overlay.
-				// Uses POLYGON_OFFSET (same as text_display entities) with full white.
-				collector.order(2).submitText(
-						poseStack, textX, 0, fcs,
-						false, Font.DisplayMode.POLYGON_OFFSET,
-						light, 0xFFFFFFFF, 0, 0
-				);
-
-				poseStack.popPose();
+		if (anyName) {
+			HandyBookshelfConfig config = HandyBookshelfConfig.get();
+			double nameTagRangeSq = config.nameTagRange * (double) config.nameTagRange;
+			if (state.distanceToCameraSq <= nameTagRangeSq) {
+				submitNameTag(state, poseStack, collector, cameraState, config);
 			}
+		}
+	}
+
+	private void submitGlint(ChiseledBookshelfRenderState state, PoseStack poseStack,
+							 SubmitNodeCollector collector) {
+		RenderType opaqueLayer = RenderTypes.entityCutout(GLINT_MASK_TEXTURE);
+		RenderType glintLayer = RenderTypes.entityGlint();
+
+		for (int slot = 0; slot < 6; slot++) {
+			if (!state.slotGlint[slot]) continue;
+
+			poseStack.pushPose();
+			applyFacingRotation(poseStack, state.facing);
+
+			final int capturedSlot = slot;
+
+			// Pass 1: opaque textured quad (writes depth, uses mask to limit to book area)
+			collector.submitCustomGeometry(poseStack, opaqueLayer,
+					(pose, vertexConsumer) -> renderOpaqueQuad(pose, vertexConsumer, capturedSlot));
+
+			// Pass 2: glint overlay (EQUAL_DEPTH_TEST matches pass 1)
+			collector.submitCustomGeometry(poseStack, glintLayer,
+					(pose, vertexConsumer) -> renderGlintQuad(pose, vertexConsumer, capturedSlot));
+
+			poseStack.popPose();
+		}
+	}
+
+	private void submitNameTag(ChiseledBookshelfRenderState state, PoseStack poseStack,
+							   SubmitNodeCollector collector, CameraRenderState cameraState,
+							   HandyBookshelfConfig config) {
+		for (int slot = 0; slot < 6; slot++) {
+			if (state.slotName[slot] == null) continue;
+
+			poseStack.pushPose();
+
+			// Calculate slot center in block-local world coordinates
+			SlotGeometry geom = SLOTS[slot];
+			float cx = (geom.fromX() + geom.toX()) / 2f;
+			float cy = (geom.fromY() + geom.toY()) / 2f;
+			Vec3 slotPos = getSlotWorldOffset(cx, cy, state.facing);
+			poseStack.translate(slotPos.x, slotPos.y + 0.3, slotPos.z);
+
+			// Billboard: face camera (same as vanilla NameTagFeatureRenderer)
+			poseStack.mulPose(cameraState.orientation);
+
+			// Text scale — vanilla name tag size, adjusted by config percentage
+			float scale = 0.025F * (config.nameTagScale / 100.0f);
+			poseStack.scale(scale, -scale, scale);
+
+			// Center text horizontally
+			FormattedCharSequence fcs = state.slotName[slot].getVisualOrderText();
+			float textX = -this.font.width(fcs) / 2.0f;
+			int textWidth = this.font.width(fcs);
+
+			int bgColor = (int)(Minecraft.getInstance().options.getBackgroundOpacity(0.25f) * 255.0f) << 24;
+			int light = FULL_BRIGHT_LIGHT;
+
+			// Background quad rendered separately (like text_display entities do),
+			// in order(0) so it renders before the text.
+			collector.order(1).submitCustomGeometry(poseStack,
+					RenderTypes.textBackgroundSeeThrough(),
+					(pose, vc) -> {
+						float hw = textWidth / 2.0f + 1;
+						vc.addVertex(pose, -hw, -1.0f, 0.0f).setColor(bgColor).setLight(light);
+						vc.addVertex(pose, -hw, 10.0f, 0.0f).setColor(bgColor).setLight(light);
+						vc.addVertex(pose, hw, 10.0f, 0.0f).setColor(bgColor).setLight(light);
+						vc.addVertex(pose, hw, -1.0f, 0.0f).setColor(bgColor).setLight(light);
+					});
+
+			// Text in order(2), rendered AFTER background AND glint overlay.
+			// Uses POLYGON_OFFSET (same as text_display entities) with full white.
+			collector.order(2).submitText(
+					poseStack, textX, 0, fcs,
+					false, Font.DisplayMode.POLYGON_OFFSET,
+					light, 0xFFFFFFFF, 0, 0
+			);
+
+			poseStack.popPose();
 		}
 	}
 
