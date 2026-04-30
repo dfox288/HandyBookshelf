@@ -20,7 +20,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemStack;
@@ -33,6 +32,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Overlay-only BER for chiseled bookshelves.
@@ -174,19 +176,13 @@ public class ChiseledBookshelfRenderer implements BlockEntityRenderer<ChiseledBo
 			return stack.getHoverName();
 		}
 
-		MutableComponent result = null;
+		// getFullname() applies ChatFormatting.GRAY styling — strip it via getString() so our
+		// white vertex color (0xFFFFFFFF) controls the appearance instead.
+		List<String> names = new ArrayList<>(stored.size());
 		for (Object2IntMap.Entry<Holder<Enchantment>> entry : stored.entrySet()) {
-			// getFullname() applies ChatFormatting.GRAY styling — strip it so our
-			// white vertex color (0xFFFFFFFF) controls the appearance instead.
-			Component fullName = Enchantment.getFullname(entry.getKey(), entry.getIntValue());
-			String plain = fullName.getString();
-			if (result == null) {
-				result = Component.literal(plain);
-			} else {
-				result.append(", ").append(plain);
-			}
+			names.add(Enchantment.getFullname(entry.getKey(), entry.getIntValue()).getString());
 		}
-		return result;
+		return Component.literal(String.join(", ", names));
 	}
 
 	@Override
