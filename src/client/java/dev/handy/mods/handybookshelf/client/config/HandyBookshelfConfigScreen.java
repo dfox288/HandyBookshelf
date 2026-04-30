@@ -36,9 +36,12 @@ public class HandyBookshelfConfigScreen {
 								.name(Component.translatable(I18N_PREFIX + "nameTagRange"))
 								.description(OptionDescription.of(
 										Component.translatable(I18N_PREFIX + "nameTagRange.desc")))
-								.binding(4, () -> config.nameTagRange, val -> config.nameTagRange = val)
+								.binding(5, () -> config.nameTagRange, val -> config.nameTagRange = val)
 								.controller(opt -> IntegerSliderControllerBuilder.create(opt)
-										.range(1, 16).step(1)
+										// Capped at 5 to match vanilla player reach — the underlying
+										// aim check uses Minecraft.hitResult, which doesn't extend
+										// past reach, so values above 5 had no visible effect.
+										.range(1, 5).step(1)
 										.formatValue(v -> Component.literal(v + " blocks")))
 								.build())
 						.option(Option.<Integer>createBuilder()

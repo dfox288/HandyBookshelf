@@ -24,7 +24,7 @@ public final class HandyBookshelfConfig {
 
 	@SerialEntry public boolean enableGlint = true;
 	@SerialEntry public boolean enableNameTags = true;
-	@SerialEntry public int nameTagRange = 4;        // blocks (1-16)
+	@SerialEntry public int nameTagRange = 5;        // blocks (1-5; capped at vanilla player reach)
 	@SerialEntry public int nameTagScale = 100;      // percentage (50-200)
 
 	public HandyBookshelfConfig() {}
