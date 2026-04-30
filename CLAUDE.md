@@ -30,7 +30,7 @@ Uses `splitEnvironmentSourceSets()`:
 - `src/main/` — shared code (client + server)
 - `src/client/` — client-only code (rendering, config screen)
 
-Package: `com.example.enchantedbookshelves`
+Package: `dev.handy.mods.handybookshelf` (mod-id: `handybookshelf`)
 
 ## Dependencies
 
@@ -48,4 +48,4 @@ YACL config screen with options for:
 - Name tag render range (1-16 blocks)
 - Name tag scale (50-200%)
 
-Config class: `HandyBookshelvesConfig` — JSON file at `config/handybookshelves.json`
+Config class: `HandyBookshelfConfig` — JSON file at `config/handybookshelf.json` (with one-shot migration from the legacy `config/handybookshelves.json` path on first launch).

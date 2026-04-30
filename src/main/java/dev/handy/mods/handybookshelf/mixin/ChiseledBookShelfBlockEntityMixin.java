@@ -1,4 +1,4 @@
-package com.example.enchantedbookshelves.mixin;
+package dev.handy.mods.handybookshelf.mixin;
 
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;

@@ -1,4 +1,4 @@
-package com.example.enchantedbookshelves.client.render;
+package dev.handy.mods.handybookshelf.client.render;
 
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.core.Direction;

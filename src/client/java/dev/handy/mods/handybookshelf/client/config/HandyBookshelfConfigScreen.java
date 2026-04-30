@@ -1,6 +1,6 @@
-package com.example.enchantedbookshelves.client.config;
+package dev.handy.mods.handybookshelf.client.config;
 
-import com.example.enchantedbookshelves.config.HandyBookshelvesConfig;
+import dev.handy.mods.handybookshelf.config.HandyBookshelfConfig;
 import dev.isxander.yacl3.api.ConfigCategory;
 import dev.isxander.yacl3.api.Option;
 import dev.isxander.yacl3.api.OptionDescription;
@@ -13,43 +13,43 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 @Environment(EnvType.CLIENT)
-public class HandyBookshelvesConfigScreen {
+public class HandyBookshelfConfigScreen {
 
 	public static Screen create(Screen parent) {
-		HandyBookshelvesConfig config = HandyBookshelvesConfig.get();
+		HandyBookshelfConfig config = HandyBookshelfConfig.get();
 
 		return YetAnotherConfigLib.createBuilder()
-				.title(Component.translatable("config.handybookshelves.title"))
+				.title(Component.translatable("config.handybookshelf.title"))
 
 				.category(ConfigCategory.createBuilder()
-						.name(Component.translatable("config.handybookshelves.category.rendering"))
+						.name(Component.translatable("config.handybookshelf.category.rendering"))
 						.option(Option.<Boolean>createBuilder()
-								.name(Component.translatable("config.handybookshelves.enableGlint"))
+								.name(Component.translatable("config.handybookshelf.enableGlint"))
 								.description(OptionDescription.of(
-										Component.translatable("config.handybookshelves.enableGlint.desc")))
+										Component.translatable("config.handybookshelf.enableGlint.desc")))
 								.binding(true, () -> config.enableGlint, val -> config.enableGlint = val)
 								.controller(TickBoxControllerBuilder::create)
 								.build())
 						.option(Option.<Boolean>createBuilder()
-								.name(Component.translatable("config.handybookshelves.enableNameTags"))
+								.name(Component.translatable("config.handybookshelf.enableNameTags"))
 								.description(OptionDescription.of(
-										Component.translatable("config.handybookshelves.enableNameTags.desc")))
+										Component.translatable("config.handybookshelf.enableNameTags.desc")))
 								.binding(true, () -> config.enableNameTags, val -> config.enableNameTags = val)
 								.controller(TickBoxControllerBuilder::create)
 								.build())
 						.option(Option.<Integer>createBuilder()
-								.name(Component.translatable("config.handybookshelves.nameTagRange"))
+								.name(Component.translatable("config.handybookshelf.nameTagRange"))
 								.description(OptionDescription.of(
-										Component.translatable("config.handybookshelves.nameTagRange.desc")))
+										Component.translatable("config.handybookshelf.nameTagRange.desc")))
 								.binding(4, () -> config.nameTagRange, val -> config.nameTagRange = val)
 								.controller(opt -> IntegerSliderControllerBuilder.create(opt)
 										.range(1, 16).step(1)
 										.formatValue(v -> Component.literal(v + " blocks")))
 								.build())
 						.option(Option.<Integer>createBuilder()
-								.name(Component.translatable("config.handybookshelves.nameTagScale"))
+								.name(Component.translatable("config.handybookshelf.nameTagScale"))
 								.description(OptionDescription.of(
-										Component.translatable("config.handybookshelves.nameTagScale.desc")))
+										Component.translatable("config.handybookshelf.nameTagScale.desc")))
 								.binding(100, () -> config.nameTagScale, val -> config.nameTagScale = val)
 								.controller(opt -> IntegerSliderControllerBuilder.create(opt)
 										.range(50, 200).step(10)
@@ -57,7 +57,7 @@ public class HandyBookshelvesConfigScreen {
 								.build())
 						.build())
 
-				.save(HandyBookshelvesConfig::save)
+				.save(HandyBookshelfConfig::save)
 				.build()
 				.generateScreen(parent);
 	}

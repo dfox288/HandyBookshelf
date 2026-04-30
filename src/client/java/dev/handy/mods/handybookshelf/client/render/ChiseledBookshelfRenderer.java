@@ -1,6 +1,6 @@
-package com.example.enchantedbookshelves.client.render;
+package dev.handy.mods.handybookshelf.client.render;
 
-import com.example.enchantedbookshelves.config.HandyBookshelvesConfig;
+import dev.handy.mods.handybookshelf.config.HandyBookshelfConfig;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -44,7 +44,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ChiseledBookshelfRenderer implements BlockEntityRenderer<ChiseledBookShelfBlockEntity, ChiseledBookshelfRenderState> {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger("HandyBookshelves");
+	private static final Logger LOGGER = LoggerFactory.getLogger("HandyBookshelf");
 
 	// Slot geometry in block-local coordinates (north-facing, 0-1 scale).
 	// Each entry: { fromX, fromY, toX, toY } derived from vanilla model JSONs.
@@ -70,7 +70,7 @@ public class ChiseledBookshelfRenderer implements BlockEntityRenderer<ChiseledBo
 	};
 
 	private static final Identifier GLINT_MASK_TEXTURE =
-			Identifier.parse("handybookshelves:textures/block/chiseled_bookshelf_glint_mask.png");
+			Identifier.parse("handybookshelf:textures/block/chiseled_bookshelf_glint_mask.png");
 
 	// Z offset: slightly in front of the north face (Z=0).
 	// Both the opaque and glint quads render at this same Z so their depth values match.
@@ -102,7 +102,7 @@ public class ChiseledBookshelfRenderer implements BlockEntityRenderer<ChiseledBo
 		state.facing = blockState.getValue(ChiseledBookShelfBlock.FACING);
 		state.distanceToCameraSq = cameraPos.distanceToSqr(Vec3.atCenterOf(blockEntity.getBlockPos()));
 
-		HandyBookshelvesConfig config = HandyBookshelvesConfig.get();
+		HandyBookshelfConfig config = HandyBookshelfConfig.get();
 
 		// Determine which slot the crosshair is pointing at (if any)
 		int aimedSlot = -1;
@@ -231,7 +231,7 @@ public class ChiseledBookshelfRenderer implements BlockEntityRenderer<ChiseledBo
 		}
 
 		// Render name tag for the aimed slot when player is close
-		HandyBookshelvesConfig config = HandyBookshelvesConfig.get();
+		HandyBookshelfConfig config = HandyBookshelfConfig.get();
 		double nameTagRangeSq = config.nameTagRange * (double) config.nameTagRange;
 		if (anyName && state.distanceToCameraSq <= nameTagRangeSq) {
 			for (int slot = 0; slot < 6; slot++) {

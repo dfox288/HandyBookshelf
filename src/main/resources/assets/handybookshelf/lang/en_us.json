@@ -1,0 +1,13 @@
+{
+	"config.handybookshelf.title": "Handy Bookshelf Settings",
+
+	"config.handybookshelf.category.rendering": "Rendering",
+	"config.handybookshelf.enableGlint": "Enchantment Glint",
+	"config.handybookshelf.enableGlint.desc": "Show an enchantment shimmer on chiseled bookshelf slots that contain enchanted books.",
+	"config.handybookshelf.enableNameTags": "Name Tags",
+	"config.handybookshelf.enableNameTags.desc": "Show a floating label above bookshelf slots when you aim at them. Displays enchantment names, written book titles, and custom item names.",
+	"config.handybookshelf.nameTagRange": "Name Tag Range",
+	"config.handybookshelf.nameTagRange.desc": "How close you need to be (in blocks) for name tags to appear.",
+	"config.handybookshelf.nameTagScale": "Name Tag Size",
+	"config.handybookshelf.nameTagScale.desc": "Size of the name tag text. 100% is vanilla name tag size."
+}

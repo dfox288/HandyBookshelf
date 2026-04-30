@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.1.0-beta.3
+
+### Breaking
+- **Mod ID renamed from `handybookshelves` to `handybookshelf`** to match the rest of the Handy series convention (singular). Existing config at `config/handybookshelves.json` is migrated automatically on first launch — no settings lost.
+- Internal package moved from `com.example.enchantedbookshelves` to `dev.handy.mods.handybookshelf`. No user-facing impact unless another mod was depending on internal classes.
+
 ## 2.1.0-beta.1
 
 - Preview build for Minecraft **26.2 snapshots** (tested against 26.2-snapshot-3)
