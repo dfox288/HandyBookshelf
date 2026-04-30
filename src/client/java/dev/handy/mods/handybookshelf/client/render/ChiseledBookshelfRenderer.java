@@ -33,8 +33,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Overlay-only BER for chiseled bookshelves.
@@ -43,8 +41,6 @@ import org.slf4j.LoggerFactory;
  * and displays enchantment names as floating labels when the player is nearby.
  */
 public class ChiseledBookshelfRenderer implements BlockEntityRenderer<ChiseledBookShelfBlockEntity, ChiseledBookshelfRenderState> {
-
-	private static final Logger LOGGER = LoggerFactory.getLogger("HandyBookshelf");
 
 	// Slot geometry in block-local coordinates (north-facing, 0-1 scale).
 	// Each entry: { fromX, fromY, toX, toY } derived from vanilla model JSONs.
