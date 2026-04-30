@@ -21,7 +21,7 @@ loom {
 	splitEnvironmentSourceSets()
 
 	mods {
-		"handybookshelves" {
+		"handybookshelf" {
 			sourceSet sourceSets.main
 			sourceSet sourceSets.client
 		}
