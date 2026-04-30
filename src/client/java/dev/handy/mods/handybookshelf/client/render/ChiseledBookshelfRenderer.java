@@ -76,9 +76,6 @@ public class ChiseledBookshelfRenderer implements BlockEntityRenderer<ChiseledBo
 	// Both the opaque and glint quads render at this same Z so their depth values match.
 	private static final float GLINT_Z = -0.001f;
 
-	// Default maximum distance (squared) at which enchantment name tags are visible.
-	// Actual value comes from config.
-	private static final double DEFAULT_NAME_TAG_RANGE_SQ = 4.0 * 4.0;
 
 	private final Font font;
 
