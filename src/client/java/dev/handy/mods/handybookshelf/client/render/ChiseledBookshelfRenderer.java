@@ -76,6 +76,9 @@ public class ChiseledBookshelfRenderer implements BlockEntityRenderer<ChiseledBo
 	// Both the opaque and glint quads render at this same Z so their depth values match.
 	private static final float GLINT_Z = -0.001f;
 
+	// Packed light value for full brightness (sky=15, block=15) — bypasses lightmap dimming.
+	private static final int FULL_BRIGHT_LIGHT = 0xF000F0;
+
 
 	private final Font font;
 
@@ -256,7 +259,7 @@ public class ChiseledBookshelfRenderer implements BlockEntityRenderer<ChiseledBo
 				int textWidth = this.font.width(fcs);
 
 				int bgColor = (int)(Minecraft.getInstance().options.getBackgroundOpacity(0.25f) * 255.0f) << 24;
-				int light = 15728880;  // full brightness
+				int light = FULL_BRIGHT_LIGHT;
 
 				// Background quad rendered separately (like text_display entities do),
 				// in order(0) so it renders before the text.
@@ -323,16 +326,16 @@ public class ChiseledBookshelfRenderer implements BlockEntityRenderer<ChiseledBo
 		// U is flipped: vanilla north face maps U left-to-right as X decreases (high X = low U)
 		consumer.addVertex(pose, x0, y1, z).setColor(255, 255, 255, 255)
 				.setUv(u1, v0).setOverlay(OverlayTexture.NO_OVERLAY)
-				.setLight(0xF000F0).setNormal(pose, 0, 0, -1);
+				.setLight(FULL_BRIGHT_LIGHT).setNormal(pose, 0, 0, -1);
 		consumer.addVertex(pose, x0, y0, z).setColor(255, 255, 255, 255)
 				.setUv(u1, v1).setOverlay(OverlayTexture.NO_OVERLAY)
-				.setLight(0xF000F0).setNormal(pose, 0, 0, -1);
+				.setLight(FULL_BRIGHT_LIGHT).setNormal(pose, 0, 0, -1);
 		consumer.addVertex(pose, x1, y0, z).setColor(255, 255, 255, 255)
 				.setUv(u0, v1).setOverlay(OverlayTexture.NO_OVERLAY)
-				.setLight(0xF000F0).setNormal(pose, 0, 0, -1);
+				.setLight(FULL_BRIGHT_LIGHT).setNormal(pose, 0, 0, -1);
 		consumer.addVertex(pose, x1, y1, z).setColor(255, 255, 255, 255)
 				.setUv(u0, v0).setOverlay(OverlayTexture.NO_OVERLAY)
-				.setLight(0xF000F0).setNormal(pose, 0, 0, -1);
+				.setLight(FULL_BRIGHT_LIGHT).setNormal(pose, 0, 0, -1);
 	}
 
 	private static void renderGlintQuad(PoseStack.Pose pose, VertexConsumer consumer, int slot) {
