@@ -12,44 +12,39 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 @Environment(EnvType.CLIENT)
 public class HandyBookshelfConfigScreen {
+
+	private static final String I18N_PREFIX = "config.handybookshelf.";
 
 	public static Screen create(Screen parent) {
 		HandyBookshelfConfig config = HandyBookshelfConfig.get();
 
 		return YetAnotherConfigLib.createBuilder()
-				.title(Component.translatable("config.handybookshelf.title"))
+				.title(Component.translatable(I18N_PREFIX + "title"))
 
 				.category(ConfigCategory.createBuilder()
-						.name(Component.translatable("config.handybookshelf.category.rendering"))
-						.option(Option.<Boolean>createBuilder()
-								.name(Component.translatable("config.handybookshelf.enableGlint"))
-								.description(OptionDescription.of(
-										Component.translatable("config.handybookshelf.enableGlint.desc")))
-								.binding(true, () -> config.enableGlint, val -> config.enableGlint = val)
-								.controller(TickBoxControllerBuilder::create)
-								.build())
-						.option(Option.<Boolean>createBuilder()
-								.name(Component.translatable("config.handybookshelf.enableNameTags"))
-								.description(OptionDescription.of(
-										Component.translatable("config.handybookshelf.enableNameTags.desc")))
-								.binding(true, () -> config.enableNameTags, val -> config.enableNameTags = val)
-								.controller(TickBoxControllerBuilder::create)
-								.build())
+						.name(Component.translatable(I18N_PREFIX + "category.rendering"))
+						.option(booleanOption("enableGlint",
+								() -> config.enableGlint, val -> config.enableGlint = val))
+						.option(booleanOption("enableNameTags",
+								() -> config.enableNameTags, val -> config.enableNameTags = val))
 						.option(Option.<Integer>createBuilder()
-								.name(Component.translatable("config.handybookshelf.nameTagRange"))
+								.name(Component.translatable(I18N_PREFIX + "nameTagRange"))
 								.description(OptionDescription.of(
-										Component.translatable("config.handybookshelf.nameTagRange.desc")))
+										Component.translatable(I18N_PREFIX + "nameTagRange.desc")))
 								.binding(4, () -> config.nameTagRange, val -> config.nameTagRange = val)
 								.controller(opt -> IntegerSliderControllerBuilder.create(opt)
 										.range(1, 16).step(1)
 										.formatValue(v -> Component.literal(v + " blocks")))
 								.build())
 						.option(Option.<Integer>createBuilder()
-								.name(Component.translatable("config.handybookshelf.nameTagScale"))
+								.name(Component.translatable(I18N_PREFIX + "nameTagScale"))
 								.description(OptionDescription.of(
-										Component.translatable("config.handybookshelf.nameTagScale.desc")))
+										Component.translatable(I18N_PREFIX + "nameTagScale.desc")))
 								.binding(100, () -> config.nameTagScale, val -> config.nameTagScale = val)
 								.controller(opt -> IntegerSliderControllerBuilder.create(opt)
 										.range(50, 200).step(10)
@@ -60,5 +55,21 @@ public class HandyBookshelfConfigScreen {
 				.save(HandyBookshelfConfig::save)
 				.build()
 				.generateScreen(parent);
+	}
+
+	/**
+	 * Builds a tick-box {@link Option} with name + description sourced from the standard
+	 * translation keys ({@code config.handybookshelf.<key>} and {@code .desc}).
+	 */
+	private static Option<Boolean> booleanOption(String key,
+												 Supplier<Boolean> getter,
+												 Consumer<Boolean> setter) {
+		return Option.<Boolean>createBuilder()
+				.name(Component.translatable(I18N_PREFIX + key))
+				.description(OptionDescription.of(
+						Component.translatable(I18N_PREFIX + key + ".desc")))
+				.binding(true, getter::get, setter::accept)
+				.controller(TickBoxControllerBuilder::create)
+				.build();
 	}
 }
