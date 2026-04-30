@@ -3,6 +3,7 @@ package dev.handy.mods.handybookshelf.config;
 import dev.handy.mods.handybookshelf.HandyBookshelf;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonSyntaxException;
 import net.fabricmc.loader.api.FabricLoader;
 
 import java.io.IOException;
@@ -52,7 +53,7 @@ public class HandyBookshelfConfig {
 				if (INSTANCE == null) {
 					INSTANCE = new HandyBookshelfConfig();
 				}
-			} catch (Exception e) {
+			} catch (JsonSyntaxException | IOException e) {
 				HandyBookshelf.LOGGER.warn("Failed to load config, using defaults", e);
 				INSTANCE = new HandyBookshelfConfig();
 			}
