@@ -1,32 +1,33 @@
 package dev.handy.mods.handybookshelf.config;
 
 import dev.handy.mods.handybookshelf.HandyBookshelf;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonSyntaxException;
+import dev.isxander.yacl3.config.v2.api.ConfigClassHandler;
+import dev.isxander.yacl3.config.v2.api.SerialEntry;
+import dev.isxander.yacl3.config.v2.api.serializer.GsonConfigSerializerBuilder;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.resources.Identifier;
 
 import java.io.IOException;
-import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class HandyBookshelfConfig {
+public final class HandyBookshelfConfig {
 
-	private static HandyBookshelfConfig INSTANCE;
-	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 	private static final Path CONFIG_PATH = FabricLoader.getInstance()
-			.getConfigDir().resolve("handybookshelf.json");
+			.getConfigDir().resolve(HandyBookshelf.MOD_ID + ".json");
 	// Legacy path from before the v2.1 mod-id rename (handybookshelves → handybookshelf).
-	// Read once on first load so user settings carry over; safe to remove after a few releases.
+	// Migrated once on first load so user settings carry over; safe to remove after a few releases.
 	private static final Path LEGACY_CONFIG_PATH = FabricLoader.getInstance()
 			.getConfigDir().resolve("handybookshelves.json");
 
-	// -- Features --
-	public boolean enableGlint = true;
-	public boolean enableNameTags = true;
-	public int nameTagRange = 4;        // blocks (1-16)
-	public int nameTagScale = 100;      // percentage (50-200)
+	private static HandyBookshelfConfig INSTANCE;
+
+	@SerialEntry public boolean enableGlint = true;
+	@SerialEntry public boolean enableNameTags = true;
+	@SerialEntry public int nameTagRange = 4;        // blocks (1-16)
+	@SerialEntry public int nameTagScale = 100;      // percentage (50-200)
+
+	public HandyBookshelfConfig() {}
 
 	public static HandyBookshelfConfig get() {
 		if (INSTANCE == null) {
@@ -36,6 +37,28 @@ public class HandyBookshelfConfig {
 	}
 
 	public static void load() {
+		migrateLegacyConfigIfNeeded();
+		if (yaclLoaded()) {
+			YaclStorage.HANDLER.load();
+			INSTANCE = YaclStorage.HANDLER.instance();
+		} else {
+			// Without YACL, the config screen can't be opened anyway — run with defaults.
+			// Any previously persisted config sits on disk and gets picked up the moment YACL is installed.
+			INSTANCE = new HandyBookshelfConfig();
+		}
+	}
+
+	public static void save() {
+		if (yaclLoaded()) {
+			YaclStorage.HANDLER.save();
+		}
+	}
+
+	private static boolean yaclLoaded() {
+		return FabricLoader.getInstance().isModLoaded("yet_another_config_lib_v3");
+	}
+
+	private static void migrateLegacyConfigIfNeeded() {
 		if (!Files.exists(CONFIG_PATH) && Files.exists(LEGACY_CONFIG_PATH)) {
 			try {
 				Files.copy(LEGACY_CONFIG_PATH, CONFIG_PATH);
@@ -46,29 +69,21 @@ public class HandyBookshelfConfig {
 						LEGACY_CONFIG_PATH.getFileName(), e);
 			}
 		}
-
-		if (Files.exists(CONFIG_PATH)) {
-			try (Reader reader = Files.newBufferedReader(CONFIG_PATH)) {
-				INSTANCE = GSON.fromJson(reader, HandyBookshelfConfig.class);
-				if (INSTANCE == null) {
-					INSTANCE = new HandyBookshelfConfig();
-				}
-			} catch (JsonSyntaxException | IOException e) {
-				HandyBookshelf.LOGGER.warn("Failed to load config, using defaults", e);
-				INSTANCE = new HandyBookshelfConfig();
-			}
-		} else {
-			INSTANCE = new HandyBookshelfConfig();
-			save();
-		}
 	}
 
-	public static void save() {
-		try {
-			Files.createDirectories(CONFIG_PATH.getParent());
-			Files.writeString(CONFIG_PATH, GSON.toJson(INSTANCE));
-		} catch (IOException e) {
-			HandyBookshelf.LOGGER.warn("Failed to save config", e);
-		}
+	/**
+	 * Holds the YACL handler. Inner-class loading is lazy in the JVM, so this class is only
+	 * resolved when {@link #yaclLoaded()} is true and we actually reference it. That keeps
+	 * YACL classes off the always-executed code path and avoids a {@code NoClassDefFoundError}
+	 * for users who run without YACL installed.
+	 */
+	private static final class YaclStorage {
+		static final ConfigClassHandler<HandyBookshelfConfig> HANDLER =
+				ConfigClassHandler.createBuilder(HandyBookshelfConfig.class)
+						.id(Identifier.fromNamespaceAndPath(HandyBookshelf.MOD_ID, "config"))
+						.serializer(cfg -> GsonConfigSerializerBuilder.create(cfg)
+								.setPath(CONFIG_PATH)
+								.build())
+						.build();
 	}
 }
