@@ -44,27 +44,29 @@ import java.util.List;
  */
 public class ChiseledBookshelfRenderer implements BlockEntityRenderer<ChiseledBookShelfBlockEntity, ChiseledBookshelfRenderState> {
 
-	// Slot geometry in block-local coordinates (north-facing, 0-1 scale).
-	// Each entry: { fromX, fromY, toX, toY } derived from vanilla model JSONs.
-	// Slots 0-2 = top row (left, mid, right), slots 3-5 = bottom row.
-	private static final float[][] SLOT_BOUNDS = {
-			{10f/16f, 8f/16f, 16f/16f, 16f/16f},  // slot 0: top-left (high X = player's left on north face)
-			{ 5f/16f, 8f/16f, 10f/16f, 16f/16f},  // slot 1: top-mid
-			{ 0f/16f, 8f/16f,  5f/16f, 16f/16f},  // slot 2: top-right
-			{10f/16f, 0f/16f, 16f/16f,  8f/16f},  // slot 3: bottom-left
-			{ 5f/16f, 0f/16f, 10f/16f,  8f/16f},  // slot 4: bottom-mid
-			{ 0f/16f, 0f/16f,  5f/16f,  8f/16f},  // slot 5: bottom-right
-	};
+	/**
+	 * Per-slot geometry: the block-local quad in 0-1 coordinates ({@code fromX/Y..toX/Y},
+	 * north-facing) and its UV window into the glint mask texture ({@code u0/v0..u1/v1}).
+	 * Slots 0-2 = top row (left, mid, right), slots 3-5 = bottom row.
+	 */
+	private record SlotGeometry(
+			float fromX, float fromY, float toX, float toY,
+			float u0, float v0, float u1, float v1
+	) {}
 
-	// Per-slot UV coordinates into the glint mask texture (16x16).
-	// Each entry: { u0, v0, u1, v1 } in normalized 0-1 coordinates.
-	private static final float[][] SLOT_UVS = {
-			{ 0f/16f,  0f/16f,  6f/16f,  8f/16f},  // slot 0
-			{ 6f/16f,  0f/16f, 11f/16f,  8f/16f},  // slot 1
-			{11f/16f,  0f/16f, 16f/16f,  8f/16f},  // slot 2
-			{ 0f/16f,  8f/16f,  6f/16f, 16f/16f},  // slot 3
-			{ 6f/16f,  8f/16f, 11f/16f, 16f/16f},  // slot 4
-			{11f/16f,  8f/16f, 16f/16f, 16f/16f},  // slot 5
+	private static final SlotGeometry[] SLOTS = {
+			// slot 0: top-left (high X = player's left on north face)
+			new SlotGeometry(10f/16f, 8f/16f, 16f/16f, 16f/16f,   0f/16f,  0f/16f,  6f/16f,  8f/16f),
+			// slot 1: top-mid
+			new SlotGeometry( 5f/16f, 8f/16f, 10f/16f, 16f/16f,   6f/16f,  0f/16f, 11f/16f,  8f/16f),
+			// slot 2: top-right
+			new SlotGeometry( 0f/16f, 8f/16f,  5f/16f, 16f/16f,  11f/16f,  0f/16f, 16f/16f,  8f/16f),
+			// slot 3: bottom-left
+			new SlotGeometry(10f/16f, 0f/16f, 16f/16f,  8f/16f,   0f/16f,  8f/16f,  6f/16f, 16f/16f),
+			// slot 4: bottom-mid
+			new SlotGeometry( 5f/16f, 0f/16f, 10f/16f,  8f/16f,   6f/16f,  8f/16f, 11f/16f, 16f/16f),
+			// slot 5: bottom-right
+			new SlotGeometry( 0f/16f, 0f/16f,  5f/16f,  8f/16f,  11f/16f,  8f/16f, 16f/16f, 16f/16f),
 	};
 
 	private static final Identifier GLINT_MASK_TEXTURE =
@@ -232,9 +234,9 @@ public class ChiseledBookshelfRenderer implements BlockEntityRenderer<ChiseledBo
 				poseStack.pushPose();
 
 				// Calculate slot center in block-local world coordinates
-				float[] bounds = SLOT_BOUNDS[slot];
-				float cx = (bounds[0] + bounds[2]) / 2f;
-				float cy = (bounds[1] + bounds[3]) / 2f;
+				SlotGeometry geom = SLOTS[slot];
+				float cx = (geom.fromX() + geom.toX()) / 2f;
+				float cy = (geom.fromY() + geom.toY()) / 2f;
 				Vec3 slotPos = getSlotWorldOffset(cx, cy, state.facing);
 				poseStack.translate(slotPos.x, slotPos.y + 0.3, slotPos.z);
 
@@ -308,10 +310,9 @@ public class ChiseledBookshelfRenderer implements BlockEntityRenderer<ChiseledBo
 	}
 
 	private static void renderOpaqueQuad(PoseStack.Pose pose, VertexConsumer consumer, int slot) {
-		float[] bounds = SLOT_BOUNDS[slot];
-		float[] uvs = SLOT_UVS[slot];
-		float x0 = bounds[0], y0 = bounds[1], x1 = bounds[2], y1 = bounds[3];
-		float u0 = uvs[0], v0 = uvs[1], u1 = uvs[2], v1 = uvs[3];
+		SlotGeometry geom = SLOTS[slot];
+		float x0 = geom.fromX(), y0 = geom.fromY(), x1 = geom.toX(), y1 = geom.toY();
+		float u0 = geom.u0(), v0 = geom.v0(), u1 = geom.u1(), v1 = geom.v1();
 		float z = GLINT_Z;
 
 		// Full entity vertex format: POSITION_COLOR_TEX_OVERLAY_LIGHTMAP_NORMAL
@@ -331,8 +332,8 @@ public class ChiseledBookshelfRenderer implements BlockEntityRenderer<ChiseledBo
 	}
 
 	private static void renderGlintQuad(PoseStack.Pose pose, VertexConsumer consumer, int slot) {
-		float[] bounds = SLOT_BOUNDS[slot];
-		float x0 = bounds[0], y0 = bounds[1], x1 = bounds[2], y1 = bounds[3];
+		SlotGeometry geom = SLOTS[slot];
+		float x0 = geom.fromX(), y0 = geom.fromY(), x1 = geom.toX(), y1 = geom.toY();
 		float z = GLINT_Z;
 
 		// POSITION_TEX format only (matches GLINT pipeline vertex format)
