@@ -73,8 +73,12 @@ public class ChiseledBookshelfRenderer implements BlockEntityRenderer<ChiseledBo
 			Identifier.parse("handybookshelf:textures/block/chiseled_bookshelf_glint_mask.png");
 
 	// Z offset: slightly in front of the north face (Z=0).
-	// Both the opaque and glint quads render at this same Z so their depth values match.
 	private static final float GLINT_Z = -0.001f;
+
+	// The item glint pipeline scales glint coordinates by 8 (TextureTransform.GLINT_TEXTURING);
+	// the pre-26.3 entity glint used 0.16. Scaling block-space UV3 by 0.16 / 8 keeps the old
+	// glint density.
+	private static final float GLINT_UV_SCALE = 0.16f / 8.0f;
 
 	// Packed light value for full brightness (sky=15, block=15) — bypasses lightmap dimming.
 	private static final int FULL_BRIGHT_LIGHT = 0xF000F0;
@@ -214,15 +218,14 @@ public class ChiseledBookshelfRenderer implements BlockEntityRenderer<ChiseledBo
 
 	private void submitGlint(ChiseledBookshelfRenderState state, PoseStack poseStack,
 							 SubmitNodeCollector collector) {
-		// 26.3-snapshot-7 removed the standalone glint layers (RenderTypes.entityGlint() and
-		// friends). Glint is now baked into the material's own render type: the type takes the
-		// base texture as Sampler0 and composites the glint over it in a single pass. So the
-		// old two-pass "opaque mask, then glint with EQUAL depth test" collapses into one pass.
-		//
-		// itemCutoutGlint is the closest equivalent to the old pair: alpha-cutout (the mask is a
-		// binary 0/255 alpha stencil, so a *solid* type would fill the cut-away pixels with
-		// black), plus lightmap and overlay, which is exactly the vertex format we already emit.
-		RenderType glintLayer = RenderTypes.itemCutoutGlint(GLINT_MASK_TEXTURE);
+		// 26.3 removed the standalone glint layers (RenderTypes.entityGlint() and friends).
+		// Glint is now part of the material's render type: the base texture is Sampler0 and the
+		// glint is composited over it in one pass, so the old "cutout mask, then glint with EQUAL
+		// depth" pair becomes a single draw. Cutout, because the mask is a binary alpha stencil
+		// (a solid type would fill the cut-away pixels with black). The "special" variant takes
+		// the glint coordinates from UV3 instead of UV0, which keeps the glint scale independent
+		// of the mask UVs.
+		RenderType glintLayer = RenderTypes.itemCutoutGlintSpecial(GLINT_MASK_TEXTURE);
 
 		for (int slot = 0; slot < 6; slot++) {
 			if (!state.slotGlint[slot]) continue;
@@ -233,7 +236,7 @@ public class ChiseledBookshelfRenderer implements BlockEntityRenderer<ChiseledBo
 			final int capturedSlot = slot;
 
 			collector.submitCustomGeometry(poseStack, glintLayer,
-					(pose, vertexConsumer) -> renderOpaqueQuad(pose, vertexConsumer, capturedSlot));
+					(pose, vertexConsumer) -> renderGlintQuad(pose, vertexConsumer, capturedSlot));
 
 			poseStack.popPose();
 		}
@@ -317,25 +320,28 @@ public class ChiseledBookshelfRenderer implements BlockEntityRenderer<ChiseledBo
 		poseStack.translate(-0.5, 0.0, -0.5);
 	}
 
-	private static void renderOpaqueQuad(PoseStack.Pose pose, VertexConsumer consumer, int slot) {
+	private static void renderGlintQuad(PoseStack.Pose pose, VertexConsumer consumer, int slot) {
 		SlotGeometry geom = SLOTS[slot];
 		float x0 = geom.fromX(), y0 = geom.fromY(), x1 = geom.toX(), y1 = geom.toY();
 		float u0 = geom.u0(), v0 = geom.v0(), u1 = geom.u1(), v1 = geom.v1();
-		float z = GLINT_Z;
 
-		// Full entity vertex format: POSITION_COLOR_TEX_OVERLAY_LIGHTMAP_NORMAL
-		// U is flipped: vanilla north face maps U left-to-right as X decreases (high X = low U)
-		consumer.addVertex(pose, x0, y1, z).setColor(255, 255, 255, 255)
-				.setUv(u1, v0).setOverlay(OverlayTexture.NO_OVERLAY)
-				.setLight(FULL_BRIGHT_LIGHT).setNormal(pose, 0, 0, -1);
-		consumer.addVertex(pose, x0, y0, z).setColor(255, 255, 255, 255)
-				.setUv(u1, v1).setOverlay(OverlayTexture.NO_OVERLAY)
-				.setLight(FULL_BRIGHT_LIGHT).setNormal(pose, 0, 0, -1);
-		consumer.addVertex(pose, x1, y0, z).setColor(255, 255, 255, 255)
-				.setUv(u0, v1).setOverlay(OverlayTexture.NO_OVERLAY)
-				.setLight(FULL_BRIGHT_LIGHT).setNormal(pose, 0, 0, -1);
-		consumer.addVertex(pose, x1, y1, z).setColor(255, 255, 255, 255)
-				.setUv(u0, v0).setOverlay(OverlayTexture.NO_OVERLAY)
+		// Counter-clockwise as seen from in front of the north face (normal -Z). The item
+		// glint pipeline culls back faces, unlike the no-cull entity pipeline this quad used
+		// before 26.3 — the reverse order is culled and nothing is drawn.
+		// U is flipped: vanilla north face maps U left-to-right as X decreases (high X = low U).
+		// UV3 carries the glint coordinates in block space (V flipped), as the old glint pass did.
+		addGlintVertex(pose, consumer, x0, y1, u1, v0, x0, y0);
+		addGlintVertex(pose, consumer, x1, y1, u0, v0, x1, y0);
+		addGlintVertex(pose, consumer, x1, y0, u0, v1, x1, y1);
+		addGlintVertex(pose, consumer, x0, y0, u1, v1, x0, y1);
+	}
+
+	private static void addGlintVertex(PoseStack.Pose pose, VertexConsumer consumer,
+									   float x, float y, float u, float v, float glintU, float glintV) {
+		// Full vertex format: ENTITY_GLINT_SPECIAL (entity format plus UV3)
+		consumer.addVertex(pose, x, y, GLINT_Z).setColor(255, 255, 255, 255)
+				.setUv(u, v).setUv3(glintU * GLINT_UV_SCALE, glintV * GLINT_UV_SCALE)
+				.setOverlay(OverlayTexture.NO_OVERLAY)
 				.setLight(FULL_BRIGHT_LIGHT).setNormal(pose, 0, 0, -1);
 	}
 }
