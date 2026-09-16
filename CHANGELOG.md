@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.3.0-beta.2
+
+Tracks the **Minecraft 26.3** snapshot line forward to 26.3-snapshot-7.
+
+- Rebuilt against Fabric API **0.156.3+26.3** and YACL **3.9.6+26.3-fabric**.
+- **Enchantment glint on bookshelf slots redrawn for 26.3.** The snapshot removed the standalone glint layer the overlay used, folding glint into the material itself, so the glint is now drawn in a single pass instead of two. The effect should look the same — worth a glance if you run a resource pack that restyles chiseled bookshelves.
+- **The settings screen needs ModMenu installed** — that is how it is opened. ModMenu's first 26.3 build (`21.0.0-alpha.1`) is on Modrinth but has not reached the TerraformersMC maven yet, so grab it there if you want the settings UI. Without it the mod still runs fine on its saved settings, you just cannot change them in-game.
+
 ## 2.3.0-beta.1
 
 Preview build for the **Minecraft 26.3** snapshot cycle (tested against 26.3-snapshot-1).

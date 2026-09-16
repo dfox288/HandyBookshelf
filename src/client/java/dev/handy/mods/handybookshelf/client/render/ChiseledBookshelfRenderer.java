@@ -214,8 +214,15 @@ public class ChiseledBookshelfRenderer implements BlockEntityRenderer<ChiseledBo
 
 	private void submitGlint(ChiseledBookshelfRenderState state, PoseStack poseStack,
 							 SubmitNodeCollector collector) {
-		RenderType opaqueLayer = RenderTypes.entityCutout(GLINT_MASK_TEXTURE);
-		RenderType glintLayer = RenderTypes.entityGlint();
+		// 26.3-snapshot-7 removed the standalone glint layers (RenderTypes.entityGlint() and
+		// friends). Glint is now baked into the material's own render type: the type takes the
+		// base texture as Sampler0 and composites the glint over it in a single pass. So the
+		// old two-pass "opaque mask, then glint with EQUAL depth test" collapses into one pass.
+		//
+		// itemCutoutGlint is the closest equivalent to the old pair: alpha-cutout (the mask is a
+		// binary 0/255 alpha stencil, so a *solid* type would fill the cut-away pixels with
+		// black), plus lightmap and overlay, which is exactly the vertex format we already emit.
+		RenderType glintLayer = RenderTypes.itemCutoutGlint(GLINT_MASK_TEXTURE);
 
 		for (int slot = 0; slot < 6; slot++) {
 			if (!state.slotGlint[slot]) continue;
@@ -225,13 +232,8 @@ public class ChiseledBookshelfRenderer implements BlockEntityRenderer<ChiseledBo
 
 			final int capturedSlot = slot;
 
-			// Pass 1: opaque textured quad (writes depth, uses mask to limit to book area)
-			collector.submitCustomGeometry(poseStack, opaqueLayer,
-					(pose, vertexConsumer) -> renderOpaqueQuad(pose, vertexConsumer, capturedSlot));
-
-			// Pass 2: glint overlay (EQUAL_DEPTH_TEST matches pass 1)
 			collector.submitCustomGeometry(poseStack, glintLayer,
-					(pose, vertexConsumer) -> renderGlintQuad(pose, vertexConsumer, capturedSlot));
+					(pose, vertexConsumer) -> renderOpaqueQuad(pose, vertexConsumer, capturedSlot));
 
 			poseStack.popPose();
 		}
@@ -340,17 +342,5 @@ public class ChiseledBookshelfRenderer implements BlockEntityRenderer<ChiseledBo
 		consumer.addVertex(pose, x1, y1, z).setColor(255, 255, 255, 255)
 				.setUv(u0, v0).setOverlay(OverlayTexture.NO_OVERLAY)
 				.setLight(FULL_BRIGHT_LIGHT).setNormal(pose, 0, 0, -1);
-	}
-
-	private static void renderGlintQuad(PoseStack.Pose pose, VertexConsumer consumer, int slot) {
-		SlotGeometry geom = SLOTS[slot];
-		float x0 = geom.fromX(), y0 = geom.fromY(), x1 = geom.toX(), y1 = geom.toY();
-		float z = GLINT_Z;
-
-		// POSITION_TEX format only (matches GLINT pipeline vertex format)
-		consumer.addVertex(pose, x0, y1, z).setUv(x0, y0);
-		consumer.addVertex(pose, x0, y0, z).setUv(x0, y1);
-		consumer.addVertex(pose, x1, y0, z).setUv(x1, y1);
-		consumer.addVertex(pose, x1, y1, z).setUv(x1, y0);
 	}
 }
