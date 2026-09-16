@@ -1,6 +1,6 @@
 # Handy Bookshelf
 
-A Fabric mod that makes enchanted books visually stand out in chiseled bookshelves. Targets Minecraft 26.2.
+A Fabric mod that makes enchanted books visually stand out in chiseled bookshelves. Targets Minecraft 26.3.
 
 Slots containing enchanted books display the familiar enchantment shimmer, and looking at a slot shows the enchantment name — so you can find Mending in a 30-shelf library at a glance.
 
@@ -14,7 +14,7 @@ Slots containing enchanted books display the familiar enchantment shimmer, and l
 
 ## Requirements
 
-- Minecraft Java Edition 26.2
+- Minecraft Java Edition 26.3
 - [Fabric Loader](https://fabricmc.net/use/installer/) 0.19.3+
 - [Fabric API](https://modrinth.com/mod/fabric-api) matching your Minecraft version
 
@@ -29,7 +29,7 @@ Without these, all features work with sensible defaults. You can also edit `conf
 
 ### Single Player
 
-1. Install Fabric Loader for Minecraft 26.2
+1. Install Fabric Loader for Minecraft 26.3
 2. Download Fabric API and place it in your `mods/` folder
 3. Download Handy Bookshelf and place it in your `mods/` folder
 4. Launch the game!

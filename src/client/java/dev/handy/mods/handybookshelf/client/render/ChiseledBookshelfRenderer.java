@@ -255,7 +255,7 @@ public class ChiseledBookshelfRenderer implements BlockEntityRenderer<ChiseledBo
 			poseStack.translate(slotPos.x, slotPos.y + 0.3, slotPos.z);
 
 			// Billboard: face camera (same as vanilla NameTagFeatureRenderer)
-			poseStack.mulPose(cameraState.orientation);
+			poseStack.rotate(cameraState.orientation);
 
 			// Text scale — vanilla name tag size, adjusted by config percentage
 			float scale = 0.025F * (config.nameTagScale / 100.0f);
@@ -270,16 +270,11 @@ public class ChiseledBookshelfRenderer implements BlockEntityRenderer<ChiseledBo
 			int light = FULL_BRIGHT_LIGHT;
 
 			// Background quad rendered separately (like text_display entities do),
-			// in order(0) so it renders before the text.
-			collector.order(1).submitCustomGeometry(poseStack,
-					RenderTypes.textBackgroundSeeThrough(),
-					(pose, vc) -> {
-						float hw = textWidth / 2.0f + 1;
-						vc.addVertex(pose, -hw, -1.0f, 0.0f).setColor(bgColor).setLight(light);
-						vc.addVertex(pose, -hw, 10.0f, 0.0f).setColor(bgColor).setLight(light);
-						vc.addVertex(pose, hw, 10.0f, 0.0f).setColor(bgColor).setLight(light);
-						vc.addVertex(pose, hw, -1.0f, 0.0f).setColor(bgColor).setLight(light);
-					});
+			// in order(1) so it renders before the text. 26.3 removed the text-background
+			// render types; the collector now takes the rectangle directly.
+			float hw = textWidth / 2.0f + 1;
+			collector.order(1).submitTextBackground(poseStack,
+					-hw, -1.0f, hw, 10.0f, bgColor, Font.DisplayMode.SEE_THROUGH, light);
 
 			// Text in order(2), rendered AFTER background AND glint overlay.
 			// Uses POLYGON_OFFSET (same as text_display entities) with full white.
@@ -318,7 +313,7 @@ public class ChiseledBookshelfRenderer implements BlockEntityRenderer<ChiseledBo
 			case WEST -> -270f;
 			default -> 0f;
 		};
-		poseStack.mulPose(Axis.YP.rotationDegrees(yRot));
+		poseStack.rotateDegrees(Axis.YP, yRot);
 		poseStack.translate(-0.5, 0.0, -0.5);
 	}
 
