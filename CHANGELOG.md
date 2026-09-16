@@ -2,12 +2,11 @@
 
 ## 2.4.0
 
-Stable release for **Minecraft 26.3**.
+Updated for the **Minecraft 26.3** release.
 
-- Built against Minecraft **26.3**, Fabric Loader **0.19.5**, Fabric API **0.160.6+26.3** and YACL **3.9.6+26.3-fabric**.
-- **Enchantment glint on bookshelf slots redrawn for 26.3.** 26.3 removed the standalone glint layer the overlay used, folding glint into the material itself, so the glint is now drawn in a single pass instead of two, at the same size and speed as before. Worth a glance if you run a resource pack that restyles chiseled bookshelves.
-- **The settings screen is opened through ModMenu** (`21.0.0-beta.1` or newer for 26.3), with YACL installed. Without them the mod runs fine on its saved settings; you just cannot change them in-game.
-- **Book name tags updated for 26.3.** Minecraft changed how floating-text backgrounds are drawn; the name tag background now uses the new vanilla path and should look the same as before.
+- Requires Fabric API for 26.3.
+- The shimmer on enchanted books and the floating book name tags are updated for 26.3's new rendering and look the same as before. If you use a resource pack that changes chiseled bookshelves, give the shimmer a quick look.
+- To change settings in-game, install **ModMenu** and **YACL** (both have 26.3 versions). Without them the mod still works with its saved settings.
 
 ## 2.3.0-beta.1
 
